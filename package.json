@@ -2,18 +2,20 @@
   "name": "socket",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "type": "moudle",
   "scripts": {
     "start": "tsc && node dist/init.js",
     "build": "tsc",
-    "dev": "tsc-watch --onSuccess \"node ./dist/init.js\""
+    "dev": "tsc-watch --onSuccess \"node ./dist/init.js\"",
+    "test": "vitest"
   },
   "author": "Errorismx",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.11.5",
-    "typescript": "^5.3.3"
+    "socket.io-client": "^4.7.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
   },
   "dependencies": {
     "@types/express": "^4.17.21",

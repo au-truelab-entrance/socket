@@ -1,4 +1,4 @@
-import {type Server as NodeServer } from "node:http";
+import { type Server as NodeServer } from "node:http";
 import { Server as SocketServer } from "socket.io";
 export interface ServerToClientEvents {
   noArg: () => void;
@@ -15,25 +15,34 @@ export interface InterServerEvents {
 }
 
 export interface SocketData {
-  name: string;
-  age: number;
+  id: string;
 }
 
-let io:SocketServer;
-export function createSocket(nodeServer:NodeServer) {
-  if (!io) { 
+let io: SocketServer;
+export function createSocket(nodeServer: NodeServer) {
+  if (!io) {
     io = new SocketServer<
       ClientToServerEvents,
       ServerToClientEvents,
       InterServerEvents,
-      SocketData>(nodeServer)
-    initEvent(io)
-  };
-  return io
-} 
+      SocketData
+    >(nodeServer);
+    initEvent(io);
+  }
+  return io;
+}
 
-function initEvent(io:SocketServer){
-  io.on('connection', (socket) => {
-    console.log(socket, 'connected')
-  })
+function initEvent(io: SocketServer) {
+  io.use(function(socket, next) {
+    const auth = socket.handshake.auth;
+    if (!(auth.token === process.env.SECRET_KEY)) {
+      next(new Error('Authentication error'))
+    }
+    socket.data = auth.user
+    next()
+
+  });
+  io.on("connection", (socket) => {
+    /* console.log(socket.data.id, "connected"); */
+  });
 }

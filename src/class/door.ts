@@ -1,10 +1,13 @@
+import { ulid } from 'ulid'
+
 export default class Door{
-  x: number;
-  y: number;
-  constructor(x = 0, y = 0) {
-    this.x = x;
-    this.y = y;
-    console.log(x,y)
+  id:string
+  name:string
+  qrtoken:string
+ constructor(id) {
+    this.id = id
+    this.name = name
+    this.qrtoken = ulid()
   }
 }
 

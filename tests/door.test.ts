@@ -1,39 +1,65 @@
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { createServer } from "node:http";
 import { type AddressInfo } from "node:net";
 import { io as ioc, type Socket as ClientSocket } from "socket.io-client";
 import { Server, type Socket as ServerSocket } from "socket.io";
-import { createSocket } from "../src/class/io"
+import { createSocket } from "../src/class/io";
+import "dotenv/config";
+const MOCK_ID = '1231313123'
+
 function waitFor(socket: ServerSocket | ClientSocket, event: string) {
   return new Promise((resolve) => {
     socket.once(event, resolve);
   });
 }
 
-describe("Connection to Door IOT", () => {
+describe("Door Connection", () => {
   let io: Server, serverSocket: ServerSocket, clientSocket: ClientSocket;
-
+  let host: string;
   beforeAll(() => {
     return new Promise((resolve) => {
       const httpServer = createServer();
       io = createSocket(httpServer);
       httpServer.listen(() => {
         const port = (httpServer.address() as AddressInfo).port;
-        clientSocket = ioc(`http://localhost:${port}`);
-        io.on("connection", (socket) => {
-          serverSocket = socket;
-        });
-        clientSocket.on("connect", resolve);
+        host = `http://localhost:${port}`;
+        resolve();
       });
     });
   });
 
-  afterAll(() => {
-    io.close();
-    clientSocket.disconnect();
+  test("invalid token", () => {
+    return new Promise((resolve) => {
+      clientSocket = ioc(host, {
+        auth: (cb) => {
+          cb({ user: { id: MOCK_ID }, token: "123" });
+        },
+      });
+      clientSocket.on("connect_error", (err) => {
+        console.log(err);
+        resolve(true);
+      });
+    });
   });
 
-  it("should work", () => {
+  test("valid token and id", () => {
+    return new Promise((resolve) => {
+      clientSocket = ioc(host, {
+        auth: (cb) => {
+          cb({ user: { id: MOCK_ID }, token: process.env.SECRET_KEY });
+        },
+      });
+      io.on("connection", (socket) => {
+        serverSocket = socket;
+        expect(socket.data.id).toEqual(MOCK_ID)
+      });
+      clientSocket.on("connect", () => {
+        resolve(true);
+      });
+    });
+  });
+  
+  test("simple event", () => {
     return new Promise((resolve) => {
       clientSocket.on("hello", (arg) => {
         expect(arg).toEqual("world");
@@ -42,8 +68,13 @@ describe("Connection to Door IOT", () => {
       serverSocket.emit("hello", "world");
     });
   });
+
+
+  test("token callback", ()=> {
+
+  })
   //
-  // it("should work with an acknowledgement", () => {
+  //test("should work with an acknowledgement", () => {
   //   return new Promise((resolve) => {
   //     serverSocket.on("hi", (cb) => {
   //       cb("hola");
@@ -55,7 +86,7 @@ describe("Connection to Door IOT", () => {
   //   });
   // });
   //
-  // it("should work with emitWithAck()", async () => {
+  //test("should work with emitWithAck()", async () => {
   //   serverSocket.on("foo", (cb) => {
   //     cb("bar");
   //   });
@@ -63,9 +94,13 @@ describe("Connection to Door IOT", () => {
   //   expect(result).toEqual("bar");
   // });
   //
-  // it("should work with waitFor()", () => {
+  //test("should work with waitFor()", () => {
   //   clientSocket.emit("baz");
   //
   //   return waitFor(serverSocket, "baz");
   // });
+  afterAll(() => {
+    io.close();
+    clientSocket?.disconnect()
+  });
 });

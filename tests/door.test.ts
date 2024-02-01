@@ -4,14 +4,15 @@ import { type AddressInfo } from "node:net";
 import { io as ioc, type Socket as ClientSocket } from "socket.io-client";
 import { Server, type Socket as ServerSocket } from "socket.io";
 import { createSocket } from "../src/class/io";
+import DoorsClass from "../src/class/door/init";
 import "dotenv/config";
-const MOCK_ID = '1231313123'
-
-function waitFor(socket: ServerSocket | ClientSocket, event: string) {
-  return new Promise((resolve) => {
-    socket.once(event, resolve);
-  });
-}
+const MOCK_ID = "1231313123";
+const Doors = new DoorsClass();
+// function waitFor(socket: ServerSocket | ClientSocket, event: string) {
+//   return new Promise((resolve) => {
+//     socket.once(event, resolve);
+//   });
+// }
 
 describe("Door Connection", () => {
   let io: Server, serverSocket: ServerSocket, clientSocket: ClientSocket;
@@ -19,7 +20,7 @@ describe("Door Connection", () => {
   beforeAll(() => {
     return new Promise((resolve) => {
       const httpServer = createServer();
-      io = createSocket(httpServer);
+      io = createSocket(httpServer,Doors);
       httpServer.listen(() => {
         const port = (httpServer.address() as AddressInfo).port;
         host = `http://localhost:${port}`;
@@ -51,14 +52,14 @@ describe("Door Connection", () => {
       });
       io.on("connection", (socket) => {
         serverSocket = socket;
-        expect(socket.data.id).toEqual(MOCK_ID)
+        expect(socket.data.id).toEqual(MOCK_ID);
       });
       clientSocket.on("connect", () => {
         resolve(true);
       });
     });
   });
-  
+
   test("simple event", () => {
     return new Promise((resolve) => {
       clientSocket.on("hello", (arg) => {
@@ -69,10 +70,17 @@ describe("Door Connection", () => {
     });
   });
 
-
-  test("token callback", ()=> {
-
-  })
+  test("token callback", () => {
+    return new Promise((resolve) => {
+      // serverSocket.on("request_token", (cb) => {
+      //   cb("token");
+      // });
+      clientSocket.emit("request_token", (arg: string) => {
+        expect(arg).toEqual(Doors.get(serverSocket.data.id).getToken());
+        resolve(true);
+      });
+    });
+  });
   //
   //test("should work with an acknowledgement", () => {
   //   return new Promise((resolve) => {
@@ -101,6 +109,6 @@ describe("Door Connection", () => {
   // });
   afterAll(() => {
     io.close();
-    clientSocket?.disconnect()
+    clientSocket?.disconnect();
   });
 });

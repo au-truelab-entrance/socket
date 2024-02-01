@@ -20,7 +20,7 @@ describe("Door Connection", () => {
   beforeAll(() => {
     return new Promise((resolve) => {
       const httpServer = createServer();
-      io = createSocket(httpServer,Doors);
+      io = createSocket(httpServer, Doors);
       httpServer.listen(() => {
         const port = (httpServer.address() as AddressInfo).port;
         host = `http://localhost:${port}`;
@@ -69,44 +69,37 @@ describe("Door Connection", () => {
       serverSocket.emit("hello", "world");
     });
   });
-
+  let clientToken: string;
   test("token callback", () => {
     return new Promise((resolve) => {
-      // serverSocket.on("request_token", (cb) => {
-      //   cb("token");
-      // });
-      clientSocket.emit("request_token", (arg: string) => {
-        expect(arg).toEqual(Doors.get(serverSocket.data.id).getToken());
+      clientSocket.emit("initial", (arg: string) => {
+        clientToken = arg;
+        expect(clientToken).toEqual(Doors.get(serverSocket.data.id).getToken());
         resolve(true);
       });
     });
   });
-  //
-  //test("should work with an acknowledgement", () => {
-  //   return new Promise((resolve) => {
-  //     serverSocket.on("hi", (cb) => {
-  //       cb("hola");
-  //     });
-  //     clientSocket.emit("hi", (arg) => {
-  //       expect(arg).toEqual("hola");
-  //       resolve();
-  //     });
-  //   });
-  // });
-  //
-  //test("should work with emitWithAck()", async () => {
-  //   serverSocket.on("foo", (cb) => {
-  //     cb("bar");
-  //   });
-  //   const result = await clientSocket.emitWithAck("foo");
-  //   expect(result).toEqual("bar");
-  // });
-  //
-  //test("should work with waitFor()", () => {
-  //   clientSocket.emit("baz");
-  //
-  //   return waitFor(serverSocket, "baz");
-  // });
+  test("request new token", () => {
+    return new Promise((resolve) => {
+      let door = Doors.get(serverSocket.data.id);
+      clientSocket.emit("request_new_token", clientToken, (arg: string) => {
+        clientToken = arg;
+        expect(clientToken).toEqual(door.getToken());
+        resolve(true);
+      });
+    });
+  });
+  test("open door", () => {
+    return new Promise((resolve) => {
+      let door = Doors.get(serverSocket.data.id);
+      door.openDoor();
+      clientSocket.on("open_door", (arg) => {
+        clientToken = arg;
+        expect(arg).toEqual(door.getToken());
+        resolve(true);
+      });
+    });
+  });
   afterAll(() => {
     io.close();
     clientSocket?.disconnect();

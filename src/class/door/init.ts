@@ -18,5 +18,4 @@ export default class Doors {
   remove(id: string) {
     delete this.doors[id]
   }
-
 }

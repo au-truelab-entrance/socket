@@ -11,11 +11,18 @@ export default class DoorInstance {
     this.id = id;
     this.token = ulid();
 
-    socket.on("request_token", (callback: (token: string) => void) => {
+    socket.on("initial", (callback: (token: string) => void) => {
       if (this.initial) {
         return;
       }
       this.initial = true;
+      callback(this.getToken());
+    });
+    socket.on("request_new_token", (currentToken: string, callback: (token: string) => void) => {
+      if (!this.checkToken(currentToken)) {
+        return;
+      }
+      this.newToken();
       callback(this.getToken());
     });
   }

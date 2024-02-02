@@ -8,7 +8,7 @@ const app = express();
 const nodeServer = createServer(app);
 
 const Doors = new DoorsClass();
-const io = createSocket(nodeServer, Doors);
+const io = createSocket(nodeServer, Doors)
 
 app.get('/', (_req, res) => {
   res.send('<h1>Hello world</h1>');

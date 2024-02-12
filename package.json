@@ -12,6 +12,8 @@
   "author": "Errorismx",
   "license": "ISC",
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.6",
+    "@types/express-session": "^1.17.10",
     "@types/node": "^20.11.5",
     "socket.io-client": "^4.7.4",
     "typescript": "^5.3.3",

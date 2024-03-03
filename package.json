@@ -4,9 +4,10 @@
   "description": "",
   "type": "moudle",
   "scripts": {
-    "start": "tsc && node dist/init.js",
+    "simdoor": "node ./tests/simulate_door.mjs",
+    "start": "tsc && node dist/init.mjs",
     "build": "tsc",
-    "dev": "tsc-watch --onSuccess \"node ./dist/init.js\"",
+    "dev": "tsc-watch --onSuccess \"node ./dist/init.mjs\"",
     "test": "vitest"
   },
   "author": "Errorismx",
@@ -15,6 +16,7 @@
     "@types/cookie-parser": "^1.4.6",
     "@types/express-session": "^1.17.10",
     "@types/node": "^20.11.5",
+    "qrcode-terminal": "^0.12.0",
     "socket.io-client": "^4.7.4",
     "typescript": "^5.3.3",
     "vitest": "^1.2.1"

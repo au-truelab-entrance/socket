@@ -4,7 +4,7 @@ import { type AddressInfo } from "node:net";
 import { io as ioc, type Socket as ClientSocket } from "socket.io-client";
 import { Server, type Socket as ServerSocket } from "socket.io";
 import { createSocket } from "../src/class/io";
-import DoorsClass from "../src/class/door/init";
+import { Doors as DoorsClass } from "../src/class/door/init.js";
 import "dotenv/config";
 const MOCK_ID = "1231313123";
 const Doors = new DoorsClass();

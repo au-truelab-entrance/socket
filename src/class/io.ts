@@ -1,6 +1,6 @@
 import { type Server as NodeServer } from "node:http";
 import { Server as SocketServer } from "socket.io";
-import type DoorsClass from "./door/init.js";
+import {type Doors as DoorsClass} from "./door/init.js";
 export interface ServerToClientEvents {
   // noArg: () => void;
   // basicEmit: (a: number, b: string, c: Buffer) => void;

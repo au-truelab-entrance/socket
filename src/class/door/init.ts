@@ -1,6 +1,6 @@
 import { type Socket } from 'socket.io';
 import DoorInstance from './instance.js'
-export default class Doors {
+export class Doors {
   doors: { [key: string]: DoorInstance }
   constructor() {
     this.doors = {};

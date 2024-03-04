@@ -6,7 +6,7 @@ import { Doors as DoorsInit } from "./class/door/init.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 import {
   handleAuthRoutes,
   type LogtoExpressConfig,
@@ -33,14 +33,14 @@ app.use(session({
 app.use(handleAuthRoutes(config));
 app.use(withLogto(config));
 const nodeServer = createServer(app);
-let publicPath = path.join(__dirname, '../public');
-app.use(express.static(publicPath ));
+let publicPath = path.join(__dirname, "../public");
+app.use(express.static(publicPath));
 const Doors = new DoorsInit();
 const io = createSocket(nodeServer, Doors);
-
+app.set("view engine", "ejs");
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user.isAuthenticated) {
-    res.redirect('/logto/sign-in');
+    res.redirect("/logto/sign-in");
   }
   next();
 };
@@ -49,32 +49,33 @@ function isUserWhitelisted(email: string) {
   if (!email.includes("@")) {
     return false;
   }
-  return true;
+  return false;
 }
 
 app.get("/", (req, res) => {
-  if (req.session.returnTo?.includes('door/')) {
+  if (req.session.returnTo?.includes("door/")) {
     let url = req.session.returnTo;
     req.session.returnTo = "";
     res.redirect(url);
   } else {
-    res.sendFile(publicPath + '/home/index.html');
+    res.render(publicPath + "/home");
   }
 });
 app.get("/success", requireAuth, (req, res) => {
-  res.end(`
-  <div><a href="/logto/sign-out">Sign Out</a></div>
-  <div>success</div>
-`);
+  res.render(publicPath + "/success", { email: req.user.userInfo?.email });
+});
+
+app.get("/fail", requireAuth, (req, res) => {
+  res.render(publicPath + "/fail", { email: req.user.userInfo?.email });
 });
 app.get("/door/:id/:token", (req, res) => {
   const door = Doors.get(req.params.id);
   if (!door) {
-    return res.status(404).json({ error: "Door not found" });
+    return res.redirect("/");
   }
   const token = door.getToken();
   if (!(token == req.params.token)) {
-    return res.status(404).json({ error: "Invalid action" });
+    return res.redirect("/");
   }
 
   if (!req.user.isAuthenticated) {
@@ -84,9 +85,9 @@ app.get("/door/:id/:token", (req, res) => {
   let email = req.user.userInfo?.email || "";
   if (isUserWhitelisted(email)) {
     door.openDoor();
-    res.redirect("/success");
+    return res.redirect("/success");
   } else {
-    res.status(401).json({ error: "Unauthorized" });
+    return res.redirect("/fail");
   }
 });
 

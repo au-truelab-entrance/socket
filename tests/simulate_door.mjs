@@ -8,6 +8,7 @@ let clientSocket = io(host, {
     cb({ user: { id: MOCK_ID }, token: process.env.SECRET_KEY });
   },
 });
+
 function generateQrCode(token) {
   let url = `${host}/door/${MOCK_ID}/${token}`;
   qrcode.generate(url)
